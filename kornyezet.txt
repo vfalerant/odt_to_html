@@ -1,0 +1,30 @@
+mkdir odt-html-converter
+cd odt-html-converter
+python -m venv .venv
+.venv\Scripts\activate
+	Ha sikerült, ezt látod:
+	(.venv) C:\projekt\odt-html-converter>
+pip install PySide6
+pip install odfpy
+------------------------------------
+Első tesztprogram
+
+main.py
+-------
+from PySide6.QtWidgets import QApplication, QLabel
+
+app = QApplication([])
+
+label = QLabel("Hello PySide6")
+label.resize(300, 100)
+label.show()
+
+app.exec()
+-------
+
+Indítás:
+
+python main.py
+------------------------------------
+pip install pyside6-addons
+pyside6-designer
