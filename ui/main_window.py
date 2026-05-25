@@ -5,7 +5,8 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTextEdit,
     QFileDialog,
-    QHBoxLayout
+    QHBoxLayout,
+    QApplication
 )
 
 from converter.odt_reader import read_odt_blocks
@@ -25,20 +26,41 @@ class MainWindow(QMainWindow):
 
         main_layout = QVBoxLayout()
 
-        self.load_button = QPushButton("ODT fájl betöltése")
-        self.load_button.clicked.connect(self.load_odt)
+        # TOP BUTTONS
 
-        main_layout.addWidget(self.load_button)
+        top_button_layout = QHBoxLayout()
+
+        self.load_button = QPushButton(
+            "ODT fájl betöltése"
+        )
+
+        self.load_button.clicked.connect(
+            self.load_odt
+        )
+
+        top_button_layout.addWidget(
+            self.load_button
+        )
+
+        main_layout.addLayout(
+            top_button_layout
+        )
+
+        # MAIN CONTENT
 
         content_layout = QHBoxLayout()
 
         # LEFT DEBUG PANEL
+
         self.source_edit = QTextEdit()
         self.source_edit.setReadOnly(True)
 
-        content_layout.addWidget(self.source_edit)
+        content_layout.addWidget(
+            self.source_edit
+        )
 
-        # RIGHT
+        # RIGHT SIDE
+
         right_layout = QVBoxLayout()
 
         self.html_edit = QTextEdit()
@@ -46,14 +68,49 @@ class MainWindow(QMainWindow):
         self.preview_edit = QTextEdit()
         self.preview_edit.setReadOnly(True)
 
-        right_layout.addWidget(self.html_edit)
-        right_layout.addWidget(self.preview_edit)
+        right_layout.addWidget(
+            self.html_edit
+        )
 
-        content_layout.addLayout(right_layout)
+        right_layout.addWidget(
+            self.preview_edit
+        )
 
-        main_layout.addLayout(content_layout)
+        content_layout.addLayout(
+            right_layout
+        )
 
-        central_widget.setLayout(main_layout)
+        main_layout.addLayout(
+            content_layout
+        )
+
+        # BOTTOM BUTTONS
+
+        bottom_button_layout = QHBoxLayout()
+
+        self.copy_button = QPushButton(
+            "HTML másolása"
+        )
+
+        self.copy_button.clicked.connect(
+            self.copy_html
+        )
+
+        bottom_button_layout.addStretch()
+
+        bottom_button_layout.addWidget(
+            self.copy_button
+        )
+
+        main_layout.addLayout(
+            bottom_button_layout
+        )
+
+        central_widget.setLayout(
+            main_layout
+        )
+
+        # LIVE HTML PREVIEW
 
         self.html_edit.textChanged.connect(
             self.update_preview
@@ -74,14 +131,17 @@ class MainWindow(QMainWindow):
         blocks = read_odt_blocks(filepath)
 
         # DEBUG VIEW
+
         self.source_edit.clear()
 
         for b in blocks:
+
             self.source_edit.append(
                 f"[{b['type']}] {b['text']}"
             )
 
         # HTML
+
         html = generate_html(blocks)
 
         self.html_edit.setPlainText(html)
@@ -93,3 +153,11 @@ class MainWindow(QMainWindow):
         html = self.html_edit.toPlainText()
 
         self.preview_edit.setHtml(html)
+
+    def copy_html(self):
+
+        clipboard = QApplication.clipboard()
+
+        clipboard.setText(
+            self.html_edit.toPlainText()
+        )
