@@ -100,3 +100,14 @@ pip install -r requirements.txt
 és ugyanaz a környezet felépül.
 
 ------------------------------------
+
+Első használat:
+python -m venv .venv
+source .venv/Scripts/activate
+pip install -r requirements.txt
+
+Normál indítás:
+source .venv/Scripts/activate
+python main.py
+
+-------------------------------------

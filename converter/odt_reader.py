@@ -30,12 +30,10 @@ def load_style_map(content_root, styles_root):
 
     all_styles = []
 
-    # content.xml style-ok
     all_styles.extend(
         content_root.findall(".//style:style", NS)
     )
 
-    # styles.xml style-ok
     all_styles.extend(
         styles_root.findall(".//style:style", NS)
     )
@@ -83,6 +81,41 @@ def load_style_map(content_root, styles_root):
     return style_map
 
 
+def apply_style(text, is_bold, is_italic):
+
+    if is_bold and is_italic:
+        return f"<strong><i>{text}</i></strong>"
+
+    if is_bold:
+        return f"<strong>{text}</strong>"
+
+    if is_italic:
+        return f"<i>{text}</i>"
+
+    return text
+
+
+def get_element_style(element, style_map):
+
+    style_name = element.attrib.get(
+        f"{{{NS['text']}}}style-name"
+    )
+
+    if not style_name:
+        return {
+            "bold": False,
+            "italic": False
+        }
+
+    return style_map.get(
+        style_name,
+        {
+            "bold": False,
+            "italic": False
+        }
+    )
+
+
 def process_inline(element, style_map):
 
     result = ""
@@ -92,7 +125,6 @@ def process_inline(element, style_map):
 
     for child in element:
 
-        # SPAN
         if child.tag == f"{{{NS['text']}}}span":
 
             span_text = process_inline(
@@ -100,39 +132,25 @@ def process_inline(element, style_map):
                 style_map
             )
 
-            style_name = child.attrib.get(
-                f"{{{NS['text']}}}style-name"
+            style_info = get_element_style(
+                child,
+                style_map
             )
 
-            style_info = style_map.get(
-                style_name,
-                {}
+            span_text = apply_style(
+                span_text,
+                style_info["bold"],
+                style_info["italic"]
             )
-
-            is_bold = style_info.get(
-                "bold",
-                False
-            )
-
-            is_italic = style_info.get(
-                "italic",
-                False
-            )
-
-            if is_bold and is_italic:
-                span_text = (
-                    f"<strong><i>{span_text}</i></strong>"
-                )
-
-            elif is_bold:
-                span_text = f"<strong>{span_text}</strong>"
-
-            elif is_italic:
-                span_text = f"<i>{span_text}</i>"
 
             result += span_text
 
+        elif child.tag == f"{{{NS['text']}}}line-break":
+
+            result += "\n"
+
         else:
+
             result += process_inline(
                 child,
                 style_map
@@ -142,6 +160,19 @@ def process_inline(element, style_map):
             result += child.tail
 
     return result
+
+
+def split_paragraph_by_linebreak(
+    element,
+    style_map
+):
+
+    full_text = process_inline(
+        element,
+        style_map
+    )
+
+    return full_text.split("\n")
 
 
 def is_layout_artifact(element, text):
@@ -168,24 +199,42 @@ def process_paragraph(
     style_map
 ):
 
-    text = normalize_block_text(
-        process_inline(element, style_map)
+    parts = split_paragraph_by_linebreak(
+        element,
+        style_map
     )
 
-    if is_layout_artifact(element, text):
-        return
+    for part in parts:
 
-    if not text:
+        text = normalize_block_text(part)
+
+        if is_layout_artifact(element, text):
+            continue
+
+        if not text:
+
+            blocks.append({
+                "type": "empty",
+                "text": ""
+            })
+
+            continue
+
+        style_info = get_element_style(
+            element,
+            style_map
+        )
+
+        text = apply_style(
+            text,
+            style_info["bold"],
+            style_info["italic"]
+        )
+
         blocks.append({
-            "type": "empty",
-            "text": ""
+            "type": "p",
+            "text": text
         })
-        return
-
-    blocks.append({
-        "type": "p",
-        "text": text
-    })
 
 
 def process_heading(
@@ -200,6 +249,17 @@ def process_heading(
 
     if not text:
         return
+
+    style_info = get_element_style(
+        element,
+        style_map
+    )
+
+    text = apply_style(
+        text,
+        style_info["bold"],
+        style_info["italic"]
+    )
 
     level = element.attrib.get(
         f"{{{NS['text']}}}outline-level",
@@ -228,17 +288,33 @@ def process_list(
             NS
         ):
 
-            text = normalize_block_text(
-                process_inline(p, style_map)
+            parts = split_paragraph_by_linebreak(
+                p,
+                style_map
             )
 
-            if not text:
-                continue
+            for part in parts:
 
-            blocks.append({
-                "type": "list",
-                "text": text
-            })
+                text = normalize_block_text(part)
+
+                if not text:
+                    continue
+
+                style_info = get_element_style(
+                    p,
+                    style_map
+                )
+
+                text = apply_style(
+                    text,
+                    style_info["bold"],
+                    style_info["italic"]
+                )
+
+                blocks.append({
+                    "type": "list",
+                    "text": text
+                })
 
 
 def walk_content(

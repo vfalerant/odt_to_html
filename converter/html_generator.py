@@ -1,3 +1,17 @@
+import re
+
+
+def strip_formatting_tags(text):
+
+    # headingekből eltávolítjuk
+    # a felesleges inline formázást
+
+    text = re.sub(r"</?i>", "", text)
+    text = re.sub(r"</?strong>", "", text)
+
+    return text
+
+
 def map_block(text, element_type, is_first):
 
     # üres sor
@@ -6,7 +20,10 @@ def map_block(text, element_type, is_first):
 
     # első valódi tartalom
     if is_first:
-        return f"<h2>{text}</h2>"
+
+        clean_text = strip_formatting_tags(text)
+
+        return f"<h2>{clean_text}</h2>"
 
     # heading
     if element_type.startswith("h"):
@@ -16,10 +33,12 @@ def map_block(text, element_type, is_first):
         except:
             level = 2
 
-        if level == 1:
-            return f"<h2>{text}</h2>"
+        clean_text = strip_formatting_tags(text)
 
-        return f"<h{level}>{text}</h{level}>"
+        if level == 1:
+            return f"<h2>{clean_text}</h2>"
+
+        return f"<h{level}>{clean_text}</h{level}>"
 
     # lista
     if element_type == "list":
