@@ -100,7 +100,7 @@ pip install -r requirements.txt
 és ugyanaz a környezet felépül.
 
 ------------------------------------
-
+Git Bash ablakban!
 Első használat:
 python -m venv .venv
 source .venv/Scripts/activate
