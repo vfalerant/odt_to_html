@@ -17,4 +17,9 @@ __pycache__/
 Thumbs.db
 
 # Window exe
-.dist/
+# --- PyInstaller build kimenetek ---
+# Ezeket a build_exe.bat generálja minden futtatáskor — nem kell
+# verziókezelni, könnyen újra elő lehet állítani.
+build/
+dist/
+*.spec

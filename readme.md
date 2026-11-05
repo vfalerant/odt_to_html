@@ -1,113 +1,40 @@
-mkdir odt_to_html
-cd odt_to_html
+# ODT → HTML Converter
+
+**A small desktop tool that turns LibreOffice Writer (`.odt`) documents into clean, WordPress-ready HTML.**
+
+Pasting from a word processor into WordPress brings along messy inline styles. This tool reads the `.odt` file directly and outputs simple, predictable HTML: headings, emphasis, lists and scene breaks, nothing else. You can tweak the result in a built-in editor, check it in a live preview, and copy it to the clipboard with one click.
+
+![screenshot](documentation/screenshot.png)
+
+## Features
+
+- Opens `.odt` files and parses their XML directly, including the document's styles
+- Maps paragraph styles to `<h2>`–`<h6>`, keeps **bold** and *italic*, and normalises whitespace
+- Turns empty lines into a centred `*` scene break
+- Promotes the first paragraph to an `<h2>` title
+- Shows the generated HTML side by side with a rendered preview
+- Copies the result to the clipboard with **Copy HTML**
+
+This project later grew into [CreateSonjaBlog](https://github.com/vfalerant/CreateSonjablog), which adds metadata, validation and direct publishing through the WordPress REST API.
+
+## Getting started
+
+```bash
 python -m venv .venv
-.venv\Scripts\activate
-	Ha sikerült, ezt látod:
-	(.venv) C:\projekt\odt-html-converter>
-pip install PySide6
-pip install odfpy
-------------------------------------
-Első tesztprogram
-
-main.py
--------
-from PySide6.QtWidgets import QApplication, QLabel
-
-app = QApplication([])
-
-label = QLabel("Hello PySide6")
-label.resize(300, 100)
-label.show()
-
-app.exec()
--------
-
-Indítás:
-
-python main.py
-------------------------------------
-pip install pyside6-addons
-pyside6-designer
-------------------------------------
-Github
-
-Igen, a .venv könyvtárat kifejezetten nem ajánlott feltölteni GitHub-ra.
-
-A virtuális környezet:
-
-gépfüggő,
-platformfüggő,
-nagy méretű,
-újragenerálható.
-✔ Mit tölts fel helyette?
-1. .gitignore
-
-A projekt gyökerébe:
-
-.venv/
-__pycache__/
-*.pyc
-
-minimum ezt érdemes.
-
-PySide6 projektnél jó verzió:
-
-# Virtual env
-.venv/
-
-# Python cache
-__pycache__/
-*.pyc
-
-# Qt Designer cache
-*.qmlc
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-✔ 2. requirements.txt
-
-Ez helyettesíti a .venv-et.
-
-Generálás:
-
-pip freeze > requirements.txt
-
-Ez tartalmazza:
-
-PySide6==...
-odfpy==...
-✔ 3. Hogyan tudja más újraépíteni?
-
-Klónozás után:
-
-python -m venv .venv
-
-aktiválás:
-
-Windows:
-
-.venv\Scripts\activate
-
-utána:
-
+.venv\Scripts\activate          # Git Bash: source .venv/Scripts/activate
 pip install -r requirements.txt
-
-és ugyanaz a környezet felépül.
-
-------------------------------------
-Git Bash ablakban!
-Első használat:
-python -m venv .venv
-source .venv/Scripts/activate
-pip install -r requirements.txt
-
-Normál indítás:
-source .venv/Scripts/activate
 python main.py
+```
 
--------------------------------------
+## Project structure
+
+```
+main.py                   # entry point
+converter/odt_reader.py   # reads the .odt (zip + XML), resolves styles into blocks
+converter/html_generator.py  # blocks → HTML
+ui/main_window.py         # PySide6 window: load, edit, preview, copy
+```
+
+## Tech
+
+Python · PySide6 (Qt) · odfpy / defusedxml · PyInstaller
